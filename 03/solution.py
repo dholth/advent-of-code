@@ -15,12 +15,12 @@ def priority(letter: str):
 def sacks_halves():
     sacks = Path("03/input").read_text().splitlines()
     for sack in sacks:
-        yield sack[: len(sack) // 2]
-        yield sack[len(sack) // 2 :]
+        yield set(sack[: len(sack) // 2])
+        yield set(sack[len(sack) // 2 :])
 
 
 def sacks_wholes():
-    return Path("03/input").read_text().splitlines()
+    return (set(line) for line in Path("03/input").read_text().splitlines())
 
 
 def inboth():
@@ -49,19 +49,8 @@ def go():
     print(sum(priority(naughty.pop()) for naughty in inboth()))
     print(sum(priority(three.pop()) for three in inthree()))
 
-    print(
-        sum(
-            priority(naughty.pop())
-            for naughty in inany(set(sack) for sack in sacks_halves())
-        )
-    )
-
-    print(
-        sum(
-            priority(naughty.pop())
-            for naughty in inany((set(sack) for sack in sacks_wholes()), count=3)
-        )
-    )
+    print(sum(priority(naughty.pop()) for naughty in inany(sacks_halves())))
+    print(sum(priority(naughty.pop()) for naughty in inany(sacks_wholes(), count=3)))
 
 
 if __name__ == "__main__":

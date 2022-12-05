@@ -5,11 +5,10 @@ use std::path::Path;
 use std::vec::Vec;
 
 fn main() {
-    let mut lines = read_lines("./05/05.txt").unwrap();
+    let mut lines = read_lines("./05/05.txt").unwrap().map(|l| l.unwrap());
     let mut stacks: Vec<String> = vec![];
 
     for line in &mut lines {
-        let line = line.unwrap();
         if line.len() == 0 {
             break;
         }
@@ -29,11 +28,10 @@ fn main() {
     }
 
     for line in &mut lines {
-        let unwrapped = line.unwrap();
-        let moves: Vec<&str> = unwrapped.split(" ").collect();
-        let count = moves[1].parse::<usize>().unwrap();
-        let from = moves[3].parse::<usize>().unwrap();
-        let to = moves[5].parse::<usize>().unwrap();
+        let moves: Vec<&str> = line.split(" ").collect();
+
+        let [count, from, to] = [moves[1], moves[3], moves[5]].map(|n| n.parse::<usize>().unwrap());
+
         // println!("{} {} {}", count, from, to);
 
         for _ in 0..count {
@@ -42,9 +40,17 @@ fn main() {
         }
     }
 
-    for i in 0..stacks.len() {
-        print!("{}", stacks[i].pop().unwrap());
-    }
+    println!(
+        "{}",
+        stacks
+            .iter_mut()
+            .map(|s| s.chars().rev().next().unwrap())
+            .collect::<String>()
+    );
+
+    // for i in 0..stacks.len() {
+    //     print!("{}", stacks[i].pop().unwrap());
+    // }
 
     println!();
 }

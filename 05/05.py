@@ -52,12 +52,9 @@ print("".join(stack[-1] for stack in stacks[1:]))
 stacks, moves = stacks_moves()
 
 for count, src, dst in moves:
-    leave = stacks[src][-count:]
-    remain = stacks[src][:-count]
-    assert len(leave) + len(remain) == len(stacks[src])
-    stacks[src] = remain
-    stacks[dst].extend(leave)
-    # pprint.pprint(stacks)
+    assert src != dst
+    stacks[dst].extend(stacks[src][-count:])
+    del stacks[src][-count:]
 
 print("".join(stack[-1] for stack in stacks[1:]))
 

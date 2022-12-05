@@ -3,6 +3,7 @@ from pathlib import Path
 
 input = Path(__file__).parents[0] / "05.txt"
 
+
 def stacks_moves():
     lines = input.read_text().splitlines()
     lines = iter(lines)
@@ -36,6 +37,7 @@ def stacks_moves():
     moves = list(parse_moves())
 
     return stacks, moves
+
 
 # part 1
 

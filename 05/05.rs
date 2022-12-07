@@ -30,13 +30,20 @@ fn main() {
     for line in &mut lines {
         let moves: Vec<&str> = line.split(" ").collect();
 
-        let [count, from, to] = [moves[1], moves[3], moves[5]].map(|n| n.parse::<usize>().unwrap());
-
         // println!("{} {} {}", count, from, to);
 
-        for _ in 0..count {
-            let item = stacks[from - 1].pop().unwrap();
-            stacks[to - 1].push(item);
+        if let [count, from, to] = moves[1..]
+            .iter()
+            .step_by(2)
+            .map(|n| n.parse::<usize>().unwrap())
+            .collect::<Vec<usize>>()[..]
+        {
+            for _ in 0..count {
+                let item = stacks[from - 1].pop().unwrap();
+                stacks[to - 1].push(item);
+            }
+        } else {
+            println!("Bad move!")
         }
     }
 

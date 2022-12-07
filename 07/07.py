@@ -126,7 +126,9 @@ class ElfDir:
     def __str__(self, level=1):
         indent = "  " * level
         files = f"\n{indent}- ".join((f"{size} {name}" for size, name in self.files))
-        repr = f"{self.name} (dir)\n{indent}- " + files
+        repr = f"{self.name} (dir)"
+        if self.files:
+            repr += f"\n{indent}- " + files
         if self.subdirs:
             repr += f"\n{indent}- " + f"\n{indent}- ".join(
                 subdir.__str__(level=level + 1) for subdir in self.subdirs

@@ -1,11 +1,41 @@
 #!/usr/bin/env python
 import aocd
 import pprint
+import random
 
 # To begin, find all of the directories with a total size of at most 100000,
 # then calculate the sum of their total sizes. In the example above, these
 # directories are a and e; the sum of their total sizes is 95437 (94853 + 584).
 # (As in this example, this process can count files more than once!)
+
+ornaments = """\
+👶 Baby
+👼 Baby Angel
+🎅 Santa Claus
+🤶 Mrs. Claus
+🧑‍🎄 Mx Claus
+🧝 Elf
+🧝‍♂️ Man Elf
+🧝‍♀️ Woman Elf
+👪 Family
+🦌 Deer
+🍪 Cookie
+🥛 Glass of Milk
+🍷 Wine Glass
+🍴 Fork and Knife
+⛪ Church
+🌟 Glowing Star
+❄️ Snowflake
+☃️ Snowman
+⛄ Snowman Without Snow
+🔥 Fire
+🎄 Christmas Tree
+🎁 Wrapped Gift
+🧦 Socks
+🔔 Bell
+🎶 Musical Notes
+🕯️ Candle
+""".splitlines()
 
 example = """\
 $ cd /
@@ -124,9 +154,10 @@ class ElfDir:
         self.subdirs = []
 
     def __str__(self, level=1):
+        ornament = random.choice(ornaments)[0]
         indent = "  " * level
         files = f"\n{indent}- ".join((f"{size} {name}" for size, name in self.files))
-        repr = f"{self.name} (dir)"
+        repr = f"{self.name} (dir) {ornament}"
         if self.files:
             repr += f"\n{indent}- " + files
         if self.subdirs:

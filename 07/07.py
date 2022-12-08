@@ -219,7 +219,7 @@ realtree = parse_recursive(ElfDir(""), iter(aocd.lines))
 assert realtree
 print(realtree.size())
 print(realtree.discard())
-aocd.submit(realtree.discard(), part="a", day=7, year=2022)
+# aocd.submit(realtree.discard(), part="a", day=7, year=2022)
 
 total_size = 70000000  # on filesystem
 necessary = 30000000
@@ -230,6 +230,6 @@ realtree.discard2(all_sizes)
 print(all_sizes)
 
 p2 = min(s for s in all_sizes if s >= free_me)
-aocd.submit(p2, part="b", day=7, year=2022)
+# aocd.submit(p2, part="b", day=7, year=2022)
 
 print(realtree)

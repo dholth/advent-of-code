@@ -1,6 +1,6 @@
+#!/usr/bin/env python
 import aocd
-import operator
-from operator import add
+from operator import add, sub
 
 example = """\
 R 4
@@ -33,31 +33,32 @@ rope = [(0, 0), (0, 0)]
 
 def display(rope, width=20, height=20):
     # (0, 0) in bottom left
-    row = ["."] * width
-    grid = [row.copy() for _ in range(height)]
-    grid[0 + 5][0 + 5] = "+"
-    print(rope)
+    lower = tuple(map(min, *rope))
+    upper = tuple(map(max, *rope))
+    size = tuple(map(sub, upper, lower))
+    row = ["."] * (size[0] + 1)
+    grid = [row.copy() for _ in range(size[1] + 1)]
+    # 0, 0 not necessarily in lower / upper window
+    # grid[0 - lower[1]][0 - lower[0]] = "+"
     for i, (x, y) in enumerate(rope):
-        grid[y + 5][x + 5] = str(i)
+        grid[y - lower[1]][x - lower[0]] = str(i)
     return "\n".join(reversed(list("".join(row) for row in grid)))
 
 
 print(display(rope))
 
 
+def cmp(a, b):
+    return (a > b) - (a < b)
+
+
 def follow(head, tail):
     # return new tail position
-    distance = tuple(map(operator.sub, head, tail))
+    distance = tuple(map(sub, head, tail))
     if max(abs(d) for d in distance) < 2:
         return tail
-    if distance[0] == 0:
-        tail = tail[0], tail[1] + distance[1] // abs(distance[1])
-    elif distance[1] == 0:
-        tail = tail[0] + distance[0] // abs(distance[0]), tail[1]
-    else:
-        tail = tail[0] + distance[0] // abs(distance[0]), tail[1] + distance[1] // abs(
-            distance[1]
-        )
+    delta = tuple(map(cmp, head, tail))
+    tail = tuple(map(add, tail, delta))
     return tail
 
 
@@ -69,9 +70,7 @@ def dragaround(lines):
             for i in range(1, len(rope)):
                 rope[i] = follow(rope[i - 1], rope[i])
             history.append(rope[-1])
-            # print(display(rope))
-        #     print("\N{RIGHTWARDS ARROW}")
-        # print("\N{LEFTWARDS ARROW}")
+        print(display(rope) + "\n")
     return history
 
 

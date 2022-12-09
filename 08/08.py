@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import aocd
 from functools import reduce
+from itertools import repeat, chain
 
 example = """\
 30373
@@ -125,3 +126,63 @@ def scenic_max(input):
 print(max(scenic_max(example)))
 
 print("Part 2", max(scenic_max(aocd.lines)))
+
+# What could be more scenic than code golf
+
+
+def scenic_iterator(input, x, y):
+    width = len(input[0])
+    height = len(input)
+
+    # iterate over coordinates from given point to outside
+    LEFT_RIGHT_UP_DOWN = [
+        (range(x - 1, -1, -1), repeat(y)),
+        (range(x + 1, width), repeat(y)),
+        (repeat(x), range(y - 1, -1, -1)),
+        (repeat(x), range(y + 1, height)),
+    ]
+
+    def coords_values(iterator):
+        for i, j in iterator:
+            yield int(input[j][i])
+
+    directions = (coords_values(zip(*d)) for d in LEFT_RIGHT_UP_DOWN)
+
+    return directions
+
+
+def scenic_look(input, x, y, end=(99,)):
+    # given i, j four iterators both alike in dignity going in whatever
+    # direction
+    candidate_height = int(input[y][x])
+
+    directions = scenic_iterator(input, x, y)
+    scores = [
+        [*takewhile_plus(lambda h: h < candidate_height, chain(direction, end))]
+        for direction in directions
+    ]
+
+    return scores
+
+
+def scenic_every(input, operation):
+    """
+    Call operation for all points in input.
+    """
+    for i in range(len(input[0])):  # x
+        for j in range(len(input)):  # y
+            yield operation(input, i, j)
+
+
+def part1(input, i, j):
+    return max(view[-1] for view in scenic_look(input, i, j, end=(99,))) == 99
+
+
+def part2(input, x, y):
+    return reduce(int.__mul__, map(len, scenic_look(input, x, y, end=())))
+
+
+print("Part 2b")
+
+print("p1", sum(scenic_every(aocd.lines, part1)))
+print("p2", max(scenic_every(aocd.lines, part2)))

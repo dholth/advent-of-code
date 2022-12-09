@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import aocd
+import operator
+import time
 from functools import reduce
 from itertools import repeat, chain
 
@@ -10,6 +12,16 @@ example = """\
 33549
 35390
 """.splitlines()
+
+import contextlib
+
+
+@contextlib.contextmanager
+def timeme():
+    start = time.time()
+    yield
+    end = time.time()
+    print(end - start)
 
 
 def identity(fn):
@@ -52,8 +64,9 @@ print(answer)
 
 assert answer == 21
 
-p1 = len(visible(aocd.lines).union(visible(aocd.lines, reverse=True)))
-print("Part 1", p1)
+with timeme():
+    p1 = len(visible(aocd.lines).union(visible(aocd.lines, reverse=True)))
+    print("Part 1", p1)
 
 
 def takewhile_plus(predicate, iterable):
@@ -100,7 +113,7 @@ def scenic_score(input, x, y):
         for direction in directions
     ]
 
-    return reduce(int.__mul__, scores)
+    return reduce(operator.mul, scores)
 
 
 scenic_score(example, 2, 3)
@@ -125,7 +138,8 @@ def scenic_max(input):
 
 print(max(scenic_max(example)))
 
-print("Part 2", max(scenic_max(aocd.lines)))
+with timeme():
+    print("Part 2", max(scenic_max(aocd.lines)))
 
 # What could be more scenic than code golf
 
@@ -175,14 +189,17 @@ def scenic_every(input, operation):
 
 
 def part1(input, i, j):
-    return max(view[-1] for view in scenic_look(input, i, j, end=(99,))) == 99
+    return any(view[-1] == 99 for view in scenic_look(input, i, j, end=(99,)))
 
 
 def part2(input, x, y):
-    return reduce(int.__mul__, map(len, scenic_look(input, x, y, end=())))
+    return reduce(operator.mul, map(len, scenic_look(input, x, y, end=())))
 
 
 print("Part 2b")
 
-print("p1", sum(scenic_every(aocd.lines, part1)))
-print("p2", max(scenic_every(aocd.lines, part2)))
+with timeme():
+    print("p1", sum(scenic_every(aocd.lines, part1)))
+
+with timeme():
+    print("p2", max(scenic_every(aocd.lines, part2)))

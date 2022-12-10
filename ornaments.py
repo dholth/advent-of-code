@@ -30,4 +30,5 @@ ornaments = """\
 """.splitlines()
 
 # Double width ornaments (not candle, snowflake or snowman)
-wide = [o[0] for o in ornaments if unicodedata.east_asian_width(o[0]) == "W"]
+# split() to preserve modifiers
+wide = [o.split()[0] for o in ornaments if unicodedata.east_asian_width(o[0]) == "W"]

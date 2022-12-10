@@ -251,7 +251,8 @@ for i in range(0, len(result), 40):
     row = result[i : i + 40]
     for i, (clock, value) in enumerate(row, 0):
         if i - 1 <= value <= i + 1:
-            print("\N{CHRISTMAS TREE}", end="")
+            # print("\N{CHRISTMAS TREE}", end="")
+            print(random.choice(ornaments.wide)[0], end="")
         else:
             print("\N{FULLWIDTH FULL STOP}", end="")
     print()

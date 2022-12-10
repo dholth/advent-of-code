@@ -3,39 +3,16 @@ import aocd
 import pprint
 import random
 
+import pathlib
+import sys
+
+sys.path.append(str(pathlib.Path(__file__).parents[1]))
+from ornaments import ornaments
+
 # To begin, find all of the directories with a total size of at most 100000,
 # then calculate the sum of their total sizes. In the example above, these
 # directories are a and e; the sum of their total sizes is 95437 (94853 + 584).
 # (As in this example, this process can count files more than once!)
-
-ornaments = """\
-👶 Baby
-👼 Baby Angel
-🎅 Santa Claus
-🤶 Mrs. Claus
-🧑‍🎄 Mx Claus
-🧝 Elf
-🧝‍♂️ Man Elf
-🧝‍♀️ Woman Elf
-👪 Family
-🦌 Deer
-🍪 Cookie
-🥛 Glass of Milk
-🍷 Wine Glass
-🍴 Fork and Knife
-⛪ Church
-🌟 Glowing Star
-❄️ Snowflake
-☃️ Snowman
-⛄ Snowman Without Snow
-🔥 Fire
-🎄 Christmas Tree
-🎁 Wrapped Gift
-🧦 Socks
-🔔 Bell
-🎶 Musical Notes
-🕯️ Candle
-""".splitlines()
 
 example = """\
 $ cd /

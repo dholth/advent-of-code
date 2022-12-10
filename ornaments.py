@@ -15,8 +15,6 @@ ornaments = """\
 🍴 Fork and Knife
 ⛪ Church
 🌟 Glowing Star
-❄️ Snowflake
-☃️ Snowman
 ⛄ Snowman Without Snow
 🔥 Fire
 🎄 Christmas Tree
@@ -26,3 +24,7 @@ ornaments = """\
 🎶 Musical Notes
 🕯️ Candle
 """.splitlines()
+
+# Not double-width emoji
+# ❄️ Snowflake
+# ☃️ Snowman

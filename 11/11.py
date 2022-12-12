@@ -3,8 +3,10 @@
 import math
 import pprint
 from dataclasses import dataclass
-import aocd
+from itertools import chain
 from typing import Callable, Iterator
+
+import aocd
 
 example = """\
 Monkey 0:
@@ -75,18 +77,14 @@ lines = iter(example)
 def parse(lines):
     print("\N{BANANA}")
     lines = iter(lines)
-    monkeys = []
-    try:
-        while True:
-            monkeys.append(Monkey(lines))
-            spam = next(lines)
-    except StopIteration:
-        pass
-
-    return monkeys
+    for line in lines:
+        if not line:
+            continue
+        # monkey does not consume whole iterable
+        yield Monkey(chain((line,), lines))
 
 
-monkeys = parse(example)
+monkeys = list(parse(example))
 
 
 def round(monkeys, divide=3, modulo=0, show=False):
@@ -116,7 +114,7 @@ print("\N{MONKEY}")
 pprint.pprint(monkeys)
 
 
-monkeys = parse(aocd.lines)
+monkeys = list(parse(aocd.lines))
 for i in range(20):
     round(monkeys)
 
@@ -130,7 +128,7 @@ part1 = monkeys[-1].activity * monkeys[-2].activity
 print(f"\N{MONKEY}\N{OFFICE BUILDING} {part1}")
 
 
-monkeys = parse(aocd.lines)
+monkeys = list(parse(aocd.lines))
 
 modulo = int(math.prod(monkey.modulo for monkey in monkeys))
 for i in range(10000):

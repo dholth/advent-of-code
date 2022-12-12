@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-
 import heapq
 import sys
+import time
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -89,9 +89,15 @@ class Grid:
             if n.height <= max_height:
                 yield n
 
-    def display(self, pending, pathset0: Iterable = (), pathset: Iterable[Node] = ()):
+    def display(
+        self,
+        pending,
+        pathset0: Iterable[tuple[int, int]] = (),
+        pathset: Iterable[Node] = (),
+    ):
         pathset0 = set(pathset0)
         pathset = set(pathset)
+        pending = set(pending)
         print("\N{MOUNTAIN}")
         for row in grid.array:
             for col in row:
@@ -104,7 +110,7 @@ class Grid:
                 elif col in pathset:
                     char = "\N{SLEUTH OR SPY}"
                 elif col in pending:
-                    char = "x"
+                    char = "+"
                 elif col.visited:
                     # print(" ", end="")
                     char = chr(ord("0") + col.distance % 10)
@@ -115,11 +121,21 @@ class Grid:
 
     def shortest(self, start, goal, connected):
         # nodes.visited and nodes.distance should be reset before calling
-        unvisited = [start]
+        display_distance = 0
+        unvisited = [(start.distance, start)]
         while unvisited:
-            node = heapq.heappop(unvisited)
+            original_priority, node = heapq.heappop(unvisited)
+            if original_priority != node.distance:
+                continue
             if node.visited:
                 continue
+            if display_distance < node.distance:
+                display_distance = node.distance
+                print("\033[2J\033[H")  # clear screen and move to home
+                self.display(n for _, n in unvisited)
+                sys.stdout.flush()
+
+                time.sleep(0.01)
             node.visited = True
             if node == goal:
                 break
@@ -127,7 +143,7 @@ class Grid:
             for next in connected(node):
                 if not next.visited:
                     next.distance = min(node.distance + 1, next.distance)
-                    heapq.heappush(unvisited, next)
+                    heapq.heappush(unvisited, (next.distance, next))
 
     def climbdown(self, start: Node, goal: Node):
         """
@@ -172,11 +188,14 @@ grid = Grid(aocd.lines)
 
 grid.shortest(grid.start, grid.end, grid.outgoing)
 path = grid.climbdown(grid.start, grid.end)
-pathset0 = set(p.coord for p in path)
+path0 = [p.coord for p in path]
 
-grid.display(set(), pathset0, set())
+print("\033[2J\033[H")  # clear screen and move to home
+grid.display(set(), set(path0), set())
 print()
 print("Steps to summit:", grid.end.distance, grid.end)
+sys.stdout.flush()
+time.sleep(1)
 
 # Part 1: shortest path from starting point to end
 # aocd.submit(grid.end.distance)
@@ -191,10 +210,25 @@ grid.shortest(grid.end, grid.start, grid.incoming)
 
 all_as = sorted(n for n in grid.nodes if n.height == 0)
 
+path1 = grid.climbdown(grid.end, all_as[0])
+
+for i in range(max(len(path0), len(path1))):
+    print("\033[2J\033[H")  # clear screen and move to home
+    grid.display(set(), path0[:i], path1[:i])
+    sys.stdout.flush()
+    time.sleep(0.01)
+
 print("Target:", grid.end)
 print("Original starting point:", grid.start)
 print("Best starting points:", all_as[:10])
 
-pathset = set(grid.climbdown(grid.end, all_as[0]))
+# import networkx
 
-grid.display(set(), pathset0, pathset)
+# digraph = networkx.DiGraph()
+# for node in grid.nodes:
+#     for neighbor in grid.outgoing(node):  # .neighbors():
+#         digraph.add_edge(node, neighbor)
+
+# from networkx.algorithms import shortest_path
+
+# print(len(shortest_path(digraph, grid.start, grid.end)))

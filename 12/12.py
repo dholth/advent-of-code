@@ -3,6 +3,7 @@
 import heapq
 import sys
 from dataclasses import dataclass
+from typing import Iterable
 
 import aocd
 
@@ -88,7 +89,9 @@ class Grid:
             if n.height <= max_height:
                 yield n
 
-    def display(self, pending, pathset0=set(), pathset=set()):
+    def display(self, pending, pathset0: Iterable = (), pathset: Iterable[Node] = ()):
+        pathset0 = set(pathset0)
+        pathset = set(pathset)
         print("\N{MOUNTAIN}")
         for row in grid.array:
             for col in row:
@@ -110,6 +113,43 @@ class Grid:
                 print(char, end="")
             print()
 
+    def shortest(self, start, goal, connected):
+        # nodes.visited and nodes.distance should be reset before calling
+        unvisited = [start]
+        while unvisited:
+            node = heapq.heappop(unvisited)
+            if node.visited:
+                continue
+            node.visited = True
+            if node == goal:
+                break
+
+            for next in connected(node):
+                if not next.visited:
+                    next.distance = min(node.distance + 1, next.distance)
+                    heapq.heappush(unvisited, next)
+
+    def climbdown(self, start: Node, goal: Node):
+        """
+        After calling shortest, traverse backwards from goal.
+        """
+        path = [goal]
+        current = goal
+        i = 0
+        while current != start and i < 600:
+            try:
+                current = sorted(
+                    n
+                    for n in grid.incoming(current)
+                    if n.distance == current.distance - 1
+                )[-1]
+                path.append(current)
+            except IndexError:
+                break
+            i += 1
+
+        return path
+
 
 # is 181x41 grid
 example = """\
@@ -126,57 +166,17 @@ print(grid.start, grid.end)
 
 assert grid.array[3][4].coord == (4, 3)
 
-unvisited = [grid.start]
-heapq.heapify(unvisited)
-
-assert unvisited[0].distance == 0
-
 print("\n".join(aocd.lines))
 
 grid = Grid(aocd.lines)
 
-unvisited = [grid.start]
-heapq.heapify(unvisited)
+grid.shortest(grid.start, grid.end, grid.outgoing)
+path = grid.climbdown(grid.start, grid.end)
+pathset0 = set(p.coord for p in path)
 
-assert unvisited[0].distance == 0
-
-while unvisited:
-    node = heapq.heappop(unvisited)
-    if node.visited:
-        # we wind up pushing the same node onto the heap a bunch of times in the
-        # for next in grid.outgoing(node) loop
-        continue
-    node.visited = True
-
-    for next in grid.outgoing(node):
-        if not next.visited:
-            next.distance = min(node.distance + 1, next.distance)
-            heapq.heappush(unvisited, next)
-
-path = [grid.end]
-current = grid.end
-i = 0
-while current != grid.start and i < 600:
-    try:
-        current = sorted(
-            n for n in grid.incoming(current) if n.distance == current.distance - 1
-        )[-1]
-        path.append(current)
-    except IndexError:
-        break
-    i += 1
-
-pathset = set(path)
-
-pathset0 = set(n.coord for n in pathset)
-
-grid.display(set(unvisited), pathset0, pathset)
+grid.display(set(), pathset0, set())
 print()
 print("Steps to summit:", grid.end.distance, grid.end)
-
-# pprint.pprint(grid.array)
-
-# print("\n".join(example))
 
 # Part 1: shortest path from starting point to end
 # aocd.submit(grid.end.distance)
@@ -187,21 +187,7 @@ grid = Grid(aocd.lines)
 grid.end.distance = 0
 grid.start.distance = sys.maxsize
 
-unvisited = [grid.end]
-heapq.heapify(unvisited)
-
-assert unvisited[0].distance == 0, unvisited[0]
-
-while unvisited:
-    node = heapq.heappop(unvisited)
-    if node.visited:
-        continue
-    node.visited = True
-
-    for next in grid.incoming(node):
-        if not next.visited:
-            next.distance = min(node.distance + 1, next.distance)
-            heapq.heappush(unvisited, next)
+grid.shortest(grid.end, grid.start, grid.incoming)
 
 all_as = sorted(n for n in grid.nodes if n.height == 0)
 
@@ -209,20 +195,6 @@ print("Target:", grid.end)
 print("Original starting point:", grid.start)
 print("Best starting points:", all_as[:10])
 
-path = [all_as[0]]
-current = all_as[0]
-i = 0
-while current != grid.start and i < 600:
-    # distance is buggy
-    try:
-        current = sorted(
-            n for n in grid.outgoing(current) if n.distance < current.distance
-        )[-1]
-        path.append(current)
-    except IndexError:
-        break
-    i += 1
+pathset = set(grid.climbdown(grid.end, all_as[0]))
 
-pathset = set(path)
-
-grid.display(set(unvisited), pathset0, pathset)
+grid.display(set(), pathset0, pathset)

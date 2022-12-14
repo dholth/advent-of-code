@@ -124,21 +124,12 @@ def fall():
                     array[tuple(position)] = SAND
                     break
             else:
-                # doesn't catch those on floor
-                rested.append(np.array(position))
-                if np.all(position == SOURCE_COORD):
-                    # get rid of hourglass
-                    array[tuple(position)] = SAND
-                    print("PART 2", len(rested))
-                    print("Grains dropped", grains)
-                    return total_steps
                 break
 
-        else:
-            assert step == ymax
+        # catch those on floor
+        rested.append(np.array(position))
 
-            # catch those on floor
-            rested.append(np.array(position))
+        if step == ymax:
             display(array, xmin, xmax + 2)
             print("Fell off end! Iterations:", total_steps)
             print("Rested array length", len(rested))
@@ -148,6 +139,11 @@ def fall():
             if not firstfall:
                 time.sleep(2)
                 firstfall = True
+        elif np.all(position == SOURCE_COORD):
+            # get rid of hourglass
+            array[tuple(position)] = SAND
+            print("Grains dropped", grains)
+            return total_steps
 
 
 total_steps = fall()

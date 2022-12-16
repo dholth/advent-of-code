@@ -296,7 +296,7 @@ def cross_search_by_scores(time_limit=1):
 
 
 # ~170s to run to completion (prints answer immediately)
-time_limit = 1
+time_limit = 0.1
 with timeme(f"Cross i*j method with {time_limit}s time limit"):
     cross_search(time_limit=time_limit)
 

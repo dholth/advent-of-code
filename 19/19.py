@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 
 from __future__ import annotations
-from typing import Any
-import sys
-import aocd
-import re
+
+import collections as c
+import math
 import pprint
+import re
+import sys
 from functools import partial
+from typing import Any
+
+import aocd
 
 try:
     from functools import cache
@@ -76,6 +80,20 @@ def max_spend(b_idx, turn):
 
 
 @cache
+def max_robots(b_idx):
+    blueprint = BLUEPRINTS[b_idx][1]
+    return {
+        "ore": max(bp.get("ore", 0) for bp in blueprint.values()),
+        "clay": max(bp.get("clay", 0) for bp in blueprint.values()),
+        "obsidian": max(bp.get("obsidian", 0) for bp in blueprint.values()),
+        "geode": 1000,
+    }
+
+
+BEST_SO_FAR: dict[int, int] = c.defaultdict(lambda: 0)
+
+
+@cache
 def search(
     b_idx: int,
     robots: tuple[str],
@@ -100,10 +118,17 @@ def search(
 
     # to calculate which robots we can build
     rdict = dict(resources)
+
     if choices:
         print(
             f"\nTurns remaining {turns} {24-turns}, resources {rdict}, robots {robots}"
         )
+
+    only_geode = False
+
+    production = c.defaultdict(lambda: 0)
+    for robot in robots:
+        production[robot] += 1
 
     # maximum we could possibly spend building robots
     overproduction = None
@@ -122,31 +147,17 @@ def search(
                 rnext[robot] = rnext[robot] + 1
 
     possibles = []
+    max_production = max_robots(b_idx)
 
     if turns:
-        # print(f"{turns} Can build nothing")
-        if not choices or choices[0] == None:
-            possibles.append(
-                partial(
-                    search,
-                    b_idx,
-                    robots,
-                    frozenset(rnext.items()),
-                    turns=turns - 1,
-                    choices=choices[1:],
-                )
-            )
-            if choices:
-                print(f"Minute {24-turns} end :{robots}: collecting {geodes=} {rnext=}")
+        # from max value down
+        for robot in ("geode", "obsidian", "clay", "ore"):
+            reqs = blueprint[robot]
 
-        for robot, reqs in blueprint.items():
             # can we build it?
             # include "don't build"
             # print(f"{turns} Try to build {robot}:{reqs} with {rdict}")
-
-            if False or turns == 1 and robot != "geode":
-                # non-geode robot can do nothing useful in 1 turn
-                # other ways to skip building extra robots?
+            if production[robot] >= max_production[robot]:
                 continue
 
             if all(
@@ -176,12 +187,31 @@ def search(
                         f"Minute {24-turns} end :{robots}: collecting {geodes=} {rnext_rob=}"
                     )
 
+        if not choices or choices[0] == None:
+            possibles.append(
+                partial(
+                    search,
+                    b_idx,
+                    robots,
+                    frozenset(rnext.items()),
+                    turns=turns - 1,
+                    choices=choices[1:],
+                )
+            )
+            if choices:
+                print(f"Minute {24-turns} end :{robots}: collecting {geodes=} {rnext=}")
+
     else:
         if choices:
-            print(f"Minute {24-turns} end :{robots}: collecting {geodes=} {rnext=}")
+            print(f"Minute {turns} end :{robots}: collecting {geodes=} {rnext=}")
 
     if possibles:
-        geodes += max(p() for p in possibles)
+        max_p_this_turn = 0
+        for p in (p() for p in possibles):
+            if p < max_p_this_turn:
+                break
+            max_p_this_turn = p
+        geodes += max_p_this_turn
 
     return geodes
 
@@ -207,16 +237,24 @@ def search_all(bp_id, min_turns=1, max_turns=24):
         print(f"{BLUEPRINTS[bp_id][0]}, Turns {turns}", best)
 
     search.cache_clear()
+    BEST_SO_FAR.clear()
 
     return BLUEPRINTS[bp_id][0], best
 
 
 pprint.pprint(BLUEPRINTS)
 
-if True:
+if False:
     scores = [(a, b) for a, b in (search_all(n, 23) for n in range(len(BLUEPRINTS)))]
     print(scores)
     print(sum(a * b for a, b in scores))
+
+else:
+    scores = [
+        (a, b) for a, b in (search_all(n, min_turns=31, max_turns=32) for n in range(3))
+    ]
+    print(scores)
+    print(math.prod(b for a, b in scores))
 
 example_choices = (
     None,  # 1

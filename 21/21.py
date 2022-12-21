@@ -76,8 +76,6 @@ scope = {}
 eval(compile(monkey, "", "exec"), scope)
 monkey = scope["monkey"]
 
-import matplotlib.pyplot as plt
-
 guesses = range(-1024000, 1024000, 1024000 // 1024)
 
 vals = [monkey(guess)[0] for guess in guesses]
@@ -112,9 +110,16 @@ def find(min_guess=0, max_guess=guess):
                 max_guess = x
 
 
-print("guess", find())
+g = find()
+print("guess", g)
 
 a0, b0 = monkey(0)
 a1, b1 = monkey(1)
 assert b0 == b1
 print(a0, a1, b1 + (a0 / (a0 / a1)))
+
+# genius idea from the internet
+a, b = monkey(0 + 1j)
+genius = int((b - a.real) / a.imag)
+print("Imagine", genius, g, genius == g)
+

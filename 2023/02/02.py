@@ -3,7 +3,7 @@
 
 from pathlib import Path
 from collections import defaultdict
-from functools import reduce
+import math
 
 # part 1
 # 12 red cubes, 13 green cubes, and 14 blue cubes.
@@ -53,7 +53,7 @@ def fewests():
                 game_summary[color] = max(part_summary[color], game_summary[color])
 
         print(i, dict(game_summary))
-        yield reduce(lambda x, y: x * y, game_summary.values())
+        yield math.prod(game_summary.values())
 
 
 print()

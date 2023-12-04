@@ -249,7 +249,7 @@ if False:
     print(scores)
     print(sum(a * b for a, b in scores))
 
-else:
+if False:
     scores = [
         (a, b) for a, b in (search_all(n, min_turns=31, max_turns=32) for n in range(3))
     ]
@@ -293,3 +293,30 @@ example_choices = (
 
 # for line, (idx, recipe) in zip(lines, parse(lines)):
 #     print("\n".join(line.split(".")), idx, recipe, "\n")
+
+
+# "better" version?
+def edges(b_idx: int, time: int, robots: dict, resources: dict):
+    for new_robot, recipe in BLUEPRINTS[b_idx][1].items():
+        # "How much of each resource do we lack"
+        print(new_robot)
+        lack = {r: resources[r] - recipe[r] for r in recipe}
+        print(lack)
+        try:
+            # negative numbers round down in a useful way
+            print(
+                f"To build {new_robot} with {robots}",
+                max(lack[r] // robots[r] for r in recipe),
+            )
+        except Exception as e:
+            print(e)
+
+
+print("Spam")
+robots = c.defaultdict(lambda: 0, {"ore": 1})
+resources = c.defaultdict(lambda: 0)
+print(edges(0, 0, robots, resources))
+
+print("with two ore")
+robots["ore"] = 2
+print(edges(0, 0, robots, resources))

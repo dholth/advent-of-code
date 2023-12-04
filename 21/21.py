@@ -122,4 +122,3 @@ print(a0, a1, b1 + (a0 / (a0 / a1)))
 a, b = monkey(0 + 1j)
 genius = int((b - a.real) / a.imag)
 print("Imagine", genius, g, genius == g)
-

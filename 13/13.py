@@ -41,6 +41,7 @@ def pairs(lines):
             line = next(lines)
         yield [Specialist(eval(line)), Specialist(eval(next(lines)))]
 
+
 def devils_compare(l, r):
     if isinstance(l, int) and isinstance(r, int):
         return l < r
@@ -61,6 +62,7 @@ def devils_compare(l, r):
     except StopIteration:
         return False
 
+
 @total_ordering
 class Specialist(list):
     def __init__(self, items):
@@ -76,6 +78,7 @@ class Specialist(list):
 
     def __gt__(self, other):
         return NotImplemented
+
 
 for pair in pairs(sample):
     print(pair)
@@ -101,13 +104,17 @@ pathlib.Path("13/sorted.txt").write_text("\n".join(repr(c) for c in chained) + "
 
 print("p2", math.prod(chained.index(d) + 1 for d in dividers))
 
+
 def sample_p2():
     chained = list(itertools.chain.from_iterable(pairs(sample)))
     chained.append(Specialist([[2]]))
     chained.append(Specialist([[6]]))
     chained.sort()
-    pathlib.Path("13/sampled.txt").write_text("\n".join(repr(c) for c in chained) + "\n")
+    pathlib.Path("13/sampled.txt").write_text(
+        "\n".join(repr(c) for c in chained) + "\n"
+    )
     print("Sample p2", math.prod(chained.index(d) + 1 for d in dividers))
+
 
 sample_p2()
 

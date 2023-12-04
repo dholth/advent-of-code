@@ -4,6 +4,7 @@ import sys
 import time
 from dataclasses import dataclass
 from typing import Iterable
+from pathlib import Path
 
 import aocd
 
@@ -182,9 +183,9 @@ print(grid.start, grid.end)
 
 assert grid.array[3][4].coord == (4, 3)
 
-print("\n".join(aocd.lines))
+data = Path("input.txt").read_text().splitlines()
 
-grid = Grid(aocd.lines)
+grid = Grid(data)
 
 grid.shortest(grid.start, grid.end, grid.outgoing)
 path = grid.climbdown(grid.start, grid.end)
@@ -201,7 +202,7 @@ time.sleep(1)
 # aocd.submit(grid.end.distance)
 
 # part 2: shortest path from any a to end
-grid = Grid(aocd.lines)
+grid = Grid(data)
 
 grid.end.distance = 0
 grid.start.distance = sys.maxsize

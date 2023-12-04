@@ -24,9 +24,7 @@ elif mode == 1:
 else:
     INPUT = Path("sample.txt")
 
-directions = [
-    offset for offset in itertools.product((-1, 0, 1), (-1, 0, 1)) if offset != (0, 0)
-]
+directions = [(i, j) for i in (-1, 0, 1) for j in (-1, 0, 1) if (i, j) != (0, 0)]
 
 print(directions)
 
@@ -43,7 +41,7 @@ pprint.pprint(board)
 adjacent_to_symbol = set()
 
 for coord, char in board.items():
-    if char == "*":
+    if not char.isdigit() or char == ".":
         # check diagonals
         print(f"Check neighbors of {coord}={char}")
         for i, j in directions:
@@ -56,7 +54,7 @@ for coord, char in board.items():
     # print()
 
 
-print("Find numbers adjacent to stars")
+print("Find numbers adjacent to symbols")
 valid_numbers = []
 invalid_numbers = []
 valid_numbers_coords = set()
@@ -97,10 +95,14 @@ for i, line in enumerate(INPUT.open(), start=1):
     for j, char in enumerate(line.strip(), start=1):
         if (i, j) in valid_numbers_coords:
             console.print(f"[red]{char}", end="")
-        elif char == "." or char.isdigit():
-            console.print(f"[grey]{char}", end="")
+        elif char.isdigit():
+            console.print("0", end="")
         else:
-            console.print(f"[blue]{char}", end="")
+            console.print(char, end="")
+        # elif char == "." or char.isdigit():
+        #     console.print(f"[grey]{char}", end="")
+        # else:
+        #     console.print(f"[blue]{char}", end="")
     console.print()
 
 print()
@@ -111,7 +113,7 @@ gear_sum = 0
 for coord, char in board.items():
     if char == "*":
         # check diagonals
-        print(f"Check gears of {coord}={char}")
+        # print(f"Check gears of {coord}={char}")
         gear_stuff = set()
         for i, j in directions:
             neighbor_coord = (coord[0] + i, coord[1] + j)
@@ -119,7 +121,7 @@ for coord, char in board.items():
             if neighbor is None:
                 continue
             gear_stuff.add(neighbor)
-        print(gear_stuff)
+        # print(gear_stuff)
         if len(gear_stuff) > 2:
             1 / 0
         if len(gear_stuff) == 2:
@@ -132,7 +134,7 @@ for coord, char in board.items():
 print("Answer", sum(valid_numbers))
 print("Answer 2", gear_sum)
 
-submit(gear_sum)
+# submit(gear_sum)
 
 all_numbers = [int(x) for x in re.findall(r"\d+", INPUT.read_text())]
 
@@ -142,6 +144,6 @@ print("All numbers minus invalid ones", sum(all_numbers) - sum(invalid_numbers))
 # Path("all_numbers.txt").write_text("\n".join(str(n) for n in all_numbers))
 # Path("all_numbers_2.txt").write_text("\n".join(str(n) for n in all_numbers_2))
 
-import pprint
+# import pprint
 
-pprint.pprint(coord_to_index)
+# pprint.pprint(coord_to_index)

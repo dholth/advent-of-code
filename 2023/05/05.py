@@ -110,9 +110,9 @@ class SeedRange:
 
 
 def parse(lines) -> tuple[list[int], list[RangeMap]]:
-    sections = [[*g] for k, g in groupby((line.strip() for line in lines), bool) if k]
-    seeds = all_numbers("".join(sections[0]))
-    ranges = [RangeMap(section) for section in sections[1:]]
+    sections = ([*g] for k, g in groupby((line.strip() for line in lines), bool) if k)
+    seeds = all_numbers("".join(next(sections)))
+    ranges = [RangeMap(section) for section in sections]
 
     return seeds, ranges
 

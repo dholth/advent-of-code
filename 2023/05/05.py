@@ -7,6 +7,7 @@ summed.
 import pprint
 import re
 from dataclasses import dataclass
+from itertools import groupby
 from pathlib import Path
 
 from aocd import submit
@@ -109,18 +110,9 @@ class SeedRange:
 
 
 def parse(lines) -> tuple[list[int], list[RangeMap]]:
-    initer = iter(lines)
-
-    def n():
-        return next(initer).strip()
-
-    def grouping():
-        return list(iter(n, ""))
-
-    seeds = all_numbers("".join(grouping()))
-    ranges = []
-    while group := grouping():
-        ranges.append(RangeMap(group))
+    sections = [[*g] for k, g in groupby((line.strip() for line in lines), bool) if k]
+    seeds = all_numbers("".join(sections[0]))
+    ranges = [RangeMap(section) for section in sections[1:]]
 
     return seeds, ranges
 

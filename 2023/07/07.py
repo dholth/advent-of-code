@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+import pprint
 from collections import Counter
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
+
+DEBUG = False
 
 INPUT = (Path(__file__).parent / "input.txt").read_text().splitlines()
 SAMPLE = """32T3K 765
@@ -16,7 +19,8 @@ QQQJA 483""".splitlines()
 
 CARD_STRENGTH = "AKQJT98765432"
 CARD_LEX = {k: -v for v, k in enumerate(CARD_STRENGTH)}
-print(CARD_LEX)
+CARD_STRENGTH_JOKER = "AKQT98765432J"
+CARD_JOKE = {k: -v for v, k in enumerate(CARD_STRENGTH_JOKER)}
 
 
 class Hand(Enum):
@@ -29,7 +33,7 @@ class Hand(Enum):
     HIGH = 1
 
 
-def rank(hand):
+def rank(hand, joker=False):
     """
     Every hand is exactly one type. From strongest to weakest, they are:
 
@@ -43,8 +47,17 @@ def rank(hand):
 
     Hands are primarily ordered based on type; for example, every full house is stronger than any three of a kind.
     """
-    counts = Counter(hand).most_common()
-    print(len(counts), counts)
+    counter = Counter(hand)
+    counts = counter.most_common()
+
+    # incorrect method
+    # if joker and "J" in hand:
+    #     jokers = counter.pop("J")
+    #     counter += Counter({counts[0][0]:jokers})
+    #     counts = counter.most_common()
+
+    if DEBUG:
+        print(len(counts), counts)
 
     if len(counts) == 1:
         return Hand.FIVE
@@ -66,6 +79,12 @@ def rank(hand):
         return Hand.HIGH
 
     assert False, "Should not get here"
+
+
+def jokerank(hand):
+    if "J" in hand:
+        return max(rank(hand.replace("J", letter)).value for letter in set(hand))
+    return rank(hand).value
 
 
 splits = (line.split() for line in SAMPLE)
@@ -105,15 +124,39 @@ decorated = sorted(
     ]
 )
 
-import pprint
 
-pprint.pprint(decorated)
+if DEBUG:
+    pprint.pprint(decorated)
 
-import math
-
-pprint.pprint([(r, d) for r, d in enumerate(decorated, start=1)])
+# pprint.pprint([(r, d) for r, d in enumerate(decorated, start=1)])
 answer = sum((r * int(d[-1])) for r, d in enumerate(decorated, start=1))
-print(answer)
+print("Answer A", answer)
 
-import aocd
-aocd.submit(answer)
+
+decorated = sorted(
+    [
+        (rank(hand, joker=True).value, tuple(CARD_JOKE[c] for c in hand), hand, bid)
+        for hand, bid in (line.split() for line in SAMPLE)
+    ]
+)
+
+# pprint.pprint(decorated)
+
+# pprint.pprint([(r, d) for r, d in enumerate(decorated, start=1)])
+answer = sum((r * int(d[-1])) for r, d in enumerate(decorated, start=1))
+print("Sample B", answer)
+
+
+decorated = sorted(
+    [
+        (jokerank(hand), tuple(CARD_JOKE[c] for c in hand), hand, bid)
+        for hand, bid in (line.split() for line in INPUT)
+    ]
+)
+
+answer = sum((r * int(d[-1])) for r, d in enumerate(decorated, start=1))
+print("Answer B", answer)
+
+print(CARD_JOKE)
+
+# 1st wrong answer 251117811

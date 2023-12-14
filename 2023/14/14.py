@@ -6,6 +6,12 @@ data = aocd.data.splitlines()
 
 t = str.maketrans({"O": "🪨", "#": "🧱", ".": "\N{FULLWIDTH FULL STOP}"})
 
+
+def display(board, message=""):
+    print(f"--- {message}")
+    print("\n".join([n.translate(t) for n in board]))
+
+
 example = """O....#....
 O.OO#....#
 .....##...
@@ -67,12 +73,22 @@ def tilt(data, reverse=True):
         yield joined
 
 
+def tilt2(data, reverse=True):
+    # "one-liner" version of tilt(), more lines when formatted 🤔
+    return [
+        "".join(
+            chain(
+                *(
+                    sorted(g, reverse=reverse)
+                    for k, g in groupby(column, lambda k: k == "#")
+                )
+            )
+        )
+        for column in columns(data)
+    ][::-1]
+
+
 new_data = data
-
-
-def display(board, message=""):
-    print(f"--- {message}")
-    print("\n".join([n.translate(t) for n in board]))
 
 
 if False:
@@ -93,13 +109,13 @@ if False:
 
 
 def cycle(data):
-    data = list(tilt(data))
+    data = list(tilt2(data))
     # Roll West
-    data = list(tilt(data, reverse=False))
+    data = list(tilt2(data, reverse=False))
     # Roll South
-    data = list(tilt(data, reverse=True))
+    data = list(tilt2(data, reverse=True))
     # Roll East
-    data = list(tilt(data, reverse=False))
+    data = list(tilt2(data, reverse=False))
     return data
 
 

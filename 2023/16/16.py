@@ -69,9 +69,6 @@ display(data)
 #   S
 
 
-visited = defaultdict(set)
-
-
 def display_visited(lines, visited):
     for i, line in enumerate(lines, start=1):
         show = []
@@ -84,7 +81,7 @@ def display_visited(lines, visited):
         print("".join(show).translate(t))
 
 
-def raycast(board, position, direction):
+def raycast(board, visited, position, direction):
     try:
         here = board[position]
     except KeyError:
@@ -95,42 +92,56 @@ def raycast(board, position, direction):
 
     visited[position].add(direction)
 
-    # display_visited(data, visited)
-    # print()
-    # time.sleep(0.01)
-    # input()
-
     match here:
         case ".":
-            raycast(board, position + direction, direction)
+            raycast(board, visited, position + direction, direction)
         case "\\":
             direction = {N: W, S: E, E: S, W: N}[direction]
-            raycast(board, position + direction, direction)
+            raycast(board, visited, position + direction, direction)
         case "/":
             direction = {N: E, S: W, E: N, W: S}[direction]
-            raycast(board, position + direction, direction)
+            raycast(board, visited, position + direction, direction)
         case "|":
             if direction in (N, S):
-                raycast(board, position + direction, direction)
+                raycast(board, visited, position + direction, direction)
             else:
-                raycast(board, position + N, N)
-                raycast(board, position + S, S)
+                raycast(board, visited, position + N, N)
+                raycast(board, visited, position + S, S)
         case "-":
             if direction in (E, W):
-                raycast(board, position + direction, direction)
+                raycast(board, visited, position + direction, direction)
             else:
-                raycast(board, position + E, E)
-                raycast(board, position + W, W)
+                raycast(board, visited, position + E, E)
+                raycast(board, visited, position + W, W)
 
 
 board = load(data)
 
+
+def edges(data):
+    """
+    Yield position, directior for all tiles on edge of board.
+    """
+    assert len(data) == len(data[0])
+    for i in range(len(data)):
+        yield V(1, i + 1), E
+        yield V(i + 1, 1), S
+        yield V(len(data), i + 1), W
+        yield V(i + 1, len(data)), N
+
+
 try:
-    raycast(board, V(1, 1), V(1, 0))
+    visited = defaultdict(set)
+    raycast(board, visited, V(1, 1), V(1, 0))
 except RecursionError:
     print("End with recursion error")
-    pass
 
-display_visited(data, visited)
-print(len(visited))
-print(len(board))
+
+max_score = 0
+for position, direction in edges(data):
+    visited = defaultdict(set)
+    raycast(board, visited, position, direction)
+    display_visited(data, visited)
+    max_score = max(max_score, len(visited))
+
+print("Maximum", max_score)

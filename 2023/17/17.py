@@ -98,14 +98,15 @@ board = load(data)
 
 # special-case the goal so it is one node
 
-MAX_TRAVEL = 3
+MAX_TRAVEL = 10
+MIN_TRAVEL = 4
 
 
 class Board:
     def __init__(self, data):
         self.data = data
 
-    def edges(self, coord, direction):
+    def edges(self, coord, direction, part2=True):
         index = cardinals.index(direction)
         left = cardinals[(index - 1) % len(cardinals)]
         right = cardinals[(index + 1) % len(cardinals)]
@@ -116,6 +117,8 @@ class Board:
             here += direction
             if here in self.data:
                 cost += self.data[here]
+                if part2 and i < (MIN_TRAVEL - 1):
+                    continue
                 yield (here, left), cost
                 yield (here, right), cost
 
@@ -136,7 +139,8 @@ for coord in b.data:
 for coord in b.data:
     for direction in cardinals:
         new_edges = [
-            ((coord, direction), n, weight) for n, weight in b.edges(coord, direction)
+            ((coord, direction), n, weight)
+            for n, weight in b.edges(coord, direction, part2=True)
         ]
         dg.add_weighted_edges_from(new_edges)
 
@@ -148,10 +152,11 @@ max_y = max(y for x, y in board)
 goal = (V(max_x, max_y), S)
 alt_goal = (V(max_x, max_y), E)
 
-# print("nodes", dg.nodes)
-
-print(shortest_path_length(dg, source=start, target=goal, weight="weight"))
-print(shortest_path_length(dg, source=alt_start, target=goal, weight="weight"))
+lengths = []
+for s in (start, alt_start):
+    for g in (goal, alt_goal):
+        lengths.append(shortest_path_length(dg, source=s, target=g, weight="weight"))
+        print(f"{s}->{g}", lengths[-1])
 
 
 def show(graph):

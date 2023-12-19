@@ -273,8 +273,3 @@ print("Example", 952408144115 - (border + area(perimeter)))
 points2 = list(dig2(data))
 # print(points2)
 border2 = sum(sump(data)) // 2 + 1
-# aocd.submit(int(area(points2)) + int(border2), part=2)
-
-# aocd.submit(p.area+int(border2), part=2)
-
-aocd.submit(Area(list(dig2(data))) + border2, part=2)

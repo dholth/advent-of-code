@@ -12,9 +12,6 @@ print = Console().print
 
 pattern = re.compile(r"^(?P<source>\w+)\{(?P<inner>.*)\}$", re.VERBOSE)
 inner_pattern = re.compile(
-    r"(?P<var>\w)(?P<op>[<>])(?P<num>\d+):(?P<next>\w+)(,$)", re.VERBOSE
-)
-inner_pattern = re.compile(
     r"((?P<var>\w)(?P<op>[<>])(?P<val>\d+):)?(?P<next>\w+)(,|$)", re.VERBOSE
 )
 

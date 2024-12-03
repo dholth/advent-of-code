@@ -1,15 +1,8 @@
 #!/usr/bin/env python
 # An animal scurries around a grid of pipes.
 
-import itertools
-import math
-import pprint
-import re
-from pathlib import Path
 
 import aocd
-
-from aocd import submit
 from rich.console import Console
 
 console = Console()

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 from collections import Counter
 
-import aocd
-
 from aocd import data
 
 numbers = [

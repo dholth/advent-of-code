@@ -56,7 +56,7 @@ def isxmas(pos, direction, depth=0, pattern="XMAS"):
     if depth == len(pattern):
         return True
     if board.get(pos) == pattern[depth]:
-        return isxmas(pos + direction, direction, depth=depth + 1)
+        return isxmas(pos + direction, direction, depth=depth + 1, pattern=pattern)
     return False
 
 

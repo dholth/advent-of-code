@@ -20,12 +20,12 @@ def parse(data: str):
     return (list(map(int, re.findall(r"\d+", line))) for line in data.splitlines())
 
 
-def operate(car, cdr, part2=False):
-    if cdr and car:
-        yield from operate(car + cdr[0], cdr[1:], part2)
-        yield from operate(car * cdr[0], cdr[1:], part2)
+def operate(car, cdr, part2=False, goal=0):
+    if cdr and car and car <= goal:
+        yield from operate(car + cdr[0], cdr[1:], part2, goal)
+        yield from operate(car * cdr[0], cdr[1:], part2, goal)
         if part2:
-            yield from operate(int(f"{car}{cdr[0]}"), cdr[1:], part2)
+            yield from operate(int(f"{car}{cdr[0]}"), cdr[1:], part2, goal)
     else:
         yield car
 
@@ -33,7 +33,7 @@ def operate(car, cdr, part2=False):
 def combine(data: str, part2=False):
     for equation in parse(data):
         answer, *numbers = equation
-        possible = operate(numbers[0], numbers[1:], part2=part2)
+        possible = operate(numbers[0], numbers[1:], part2=part2, goal=answer)
         yield answer * (any(answer == x for x in possible))
 
 

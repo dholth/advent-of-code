@@ -146,11 +146,10 @@ def compact4(disk):
                 disk[j : j + length] = disk[i : i + length]
                 disk[i : i + length] = [-1] * length
 
-                remains = (j + length, available - length)
-                if remains[1]:
-                    free[ij] = remains
-                else:
+                if available == length:
                     del free[ij]
+                else:
+                    free[ij] = (j + length, available - length)
                 break
 
     return disk

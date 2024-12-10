@@ -109,6 +109,7 @@ def compact2(disk):
             if available >= length:
                 disk[j : j + length] = disk[i : i + length]
                 disk[i : i + length] = [-1] * length
+                break
 
 
 disk2 = list(expand(parse(example)))
@@ -123,9 +124,43 @@ compact2(disk2)
 print(disk2)
 print(checksum(disk2))
 
-disk3 = list(expand(parse(aocd.data)))
+if False:
+    disk3 = list(expand(parse(aocd.data)))
+    begin = time.time_ns()
+    compact2(disk3)
+    end = time.time_ns()
+    ans2 = checksum(disk3)
+    print(f"{ans2} in {(end-begin)/1e9:.2f}s")
+
+
+def compact4(disk):
+    free = list(freelist(disk))
+    for i, length in reversed(list(usedlist(disk))):
+        # print(disk)
+        # print(free)
+        # input()
+        for ij, (j, available) in enumerate(free):
+            if j > i:
+                break
+            if available >= length:
+                disk[j : j + length] = disk[i : i + length]
+                disk[i : i + length] = [-1] * length
+
+                remains = (j + length, available - length)
+                if remains[1]:
+                    free[ij] = remains
+                else:
+                    del free[ij]
+                break
+
+    return disk
+
+
+print()
+compact4(list(expand(parse(example))))
+
+print("\ncompact4() on full data")
 begin = time.time_ns()
-compact2(disk3)
+print(checksum(compact4(list(expand(parse(aocd.data))))), end="")
 end = time.time_ns()
-ans2 = checksum(disk3)
-print(f"{ans2} in {(end-begin)/1e9:.2f}s")
+print(f" in {(end-begin)/1e9:.2f}s")

@@ -134,3 +134,4 @@ dmypy.json
 /target
 
 input.txt
+*.svg

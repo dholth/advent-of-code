@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
+from collections import defaultdict
+
 import aocd
-import itertools
 import functools
+import itertools
 import time
+import timeit
 
 
 def parse(data):
@@ -64,3 +67,26 @@ begin = time.time_ns()
 print(blink_remains(parse(aocd.data), 75))
 end = time.time_ns()
 print(f"75 blinks in {(end-begin)/1e9:.02f}s")
+
+
+def blink_iterative(turns):
+    stones = defaultdict(int)
+    for stone in parse(aocd.data):
+        stones[stone] += 1
+
+    for i in range(turns):
+        for stone, amount in list(stones.items()):
+            stones[stone] -= amount
+            for new_stone in blink(stone):
+                stones[new_stone] += amount
+
+    return sum(stones.values())
+
+begin = time.time_ns()
+print(blink_iterative(75))
+end = time.time_ns()
+print(f"75 non-recursive blinks in {(end-begin)/1e9:.02f}s")
+
+print("Dict method %0.4f" % timeit.timeit('blink_iterative(75)', number=100, globals=globals()))
+print("Memo method %0.4f" % timeit.timeit('blink_remains(parse(aocd.data), 75)', 'blink_remains.cache_clear()', number=100, globals=globals()))
+

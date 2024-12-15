@@ -180,3 +180,6 @@ for i in range(1, 6476):
 
     if i % 2000 == 0:
         print(f"{i} seconds")
+
+# >>> unicodedata.name('\u3000')
+# 'IDEOGRAPHIC SPACE'

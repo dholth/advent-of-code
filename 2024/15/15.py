@@ -105,6 +105,9 @@ class Game:
         return coord + direction
 
     def pushWide(self, coord: complex, direction: complex, debug=False):
+        if debug:
+            print("Push in ", direction, "from", coord)
+
         if direction in (1, -1):
             return self.push(coord, direction)
 
@@ -272,12 +275,7 @@ def part2(data, debug=False):
 
     for move in game.moves:
         direction = directions[move]
-        if debug:
-            print("Push in ", direction, move, PRETTY[move], "from", player)
-        player = game.pushWide(player, direction)
-        if debug:
-            display(game.grid)
-        # input("...")
+        player = game.pushWide(player, direction, debug=debug)
 
     score = game.score()
     return score
@@ -300,6 +298,6 @@ pushup = """\
 
 part2(pushup, debug=True)
 
-print("Part 2 example", part2(example, debug=True))
+print("Part 2 example", part2(example, debug=False))
 
 aocd.submit(part2(aocd.data))

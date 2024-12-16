@@ -69,8 +69,9 @@ class Grid:
         def build(coord=(), letter="", **args):
             horizontal = Node(coord=coord + (HORIZONTAL,), **args, letter=letter)
             vertical = Node(coord=coord + (VERTICAL,), **args, letter=letter)
-            self.nodes[horizontal.coord] = horizontal
-            self.nodes[vertical.coord] = vertical
+            if letter != "#":
+                self.nodes[horizontal.coord] = horizontal
+                self.nodes[vertical.coord] = vertical
             if letter == "S":
                 self.start = horizontal  # facing East
             elif letter == "E":
@@ -98,10 +99,8 @@ class Grid:
             (0, 0, 1),
         ):
             nx, ny, nz = x + dx, y + dy, z + dz
-            try:
+            if (nx, ny, nz) in self.nodes:
                 yield self.nodes[(nx, ny, nz)]
-            except LookupError:
-                pass
 
     def outgoing(self, node: Node):
         """

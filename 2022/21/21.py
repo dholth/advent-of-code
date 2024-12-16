@@ -46,7 +46,7 @@ graph = {}
 
 # part b gives different answer for fp=True; don't know if advent of code would
 # accept both
-for node, parsed in parse(aocd.lines, fp=True):
+for node, parsed in parse(aocd.data.splitlines(), fp=True):
     target = list(node.keys())[0]
     # stablize the toposort
     node[target] = sorted(node[target])

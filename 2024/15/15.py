@@ -123,13 +123,14 @@ class Game:
 
             pushed[move] = self.grid[move]
             probe = self.grid.get(move + direction)
+            if probe == WALL:
+                # obviates later "not any" pushable check
+                return coord
             if probe in (WALL, None):
                 continue
-            elif probe == "[":
+            elif probe in "[]":
                 # add second half of box
-                front.add(move + direction + 1)
-            elif probe == "]":
-                front.add(move + direction - 1)
+                front.add(move + direction + [-1, 1]["][".index(probe)])
             front.add(move + direction)
 
         if debug:
@@ -255,13 +256,14 @@ print("Part 1", part1(aocd.data))
 ## Part 2, everything except the robot is twice as wide!
 
 
-def widen(line):
+def widen(line: str):
     # If the tile is #, the new map contains ## instead.
     # If the tile is O, the new map contains [] instead.
     # If the tile is ., the new map contains .. instead.
     # If the tile is @, the new map contains @. instead.
+
     return line.translate(
-        {ord("#"): "##", ord("O"): "[]", ord("."): "..", ord("@"): "@."}
+        {ord(k): v for k, v in {"#": "##", "O": "[]", ".": "..", "@": "@."}.items()}
     )
 
 
@@ -300,4 +302,4 @@ part2(pushup, debug=True)
 
 print("Part 2 example", part2(example, debug=False))
 
-aocd.submit(part2(aocd.data))
+print("Part 2", part2(aocd.data))

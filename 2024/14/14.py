@@ -2,10 +2,10 @@
 
 import operator
 import re
-import time
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import reduce
+import statistics
 
 import aocd
 
@@ -165,21 +165,36 @@ def count_top_left(robots):
     return sum((1 < robot.p[0] < 32 and 1 < robot.p[1] < 32) for robot in robots)
 
 
+def spreadness(robots):
+    x, y = list(zip(*(robot.p for robot in robots)))
+    return statistics.pstdev(x) * statistics.pstdev(y)
+
+
 robots = list(parse(aocd.data))
-max_tri = 0
+max_tri = 1
+min_spread = 1e9
+frame_displayed = 0
 for i in range(1, 6476):
     simulate(robots, 1, full_size)
-    tri = triangularity(by_quadrant(robots, full_size))
-    if tri > (max_tri * 0.94):  # tri == 252 at goal
+    # winning implementation showed frames matching tri * .9, but
+
+    # tri = triangularity(by_quadrant(robots, full_size))
+    spread = spreadness(robots)
+    if spread < min_spread:
+        frame_displayed += 1
         # print("\033[2J\033[H")  # clear screen and move to home
-        max_tri = max(tri, max_tri)
+        # max_tri = max(tri, max_tri)
+        min_spread = min(spread, min_spread)
         display(robots, full_size)
         print(f"{i} seconds elapsed\n")
-        print("Triangularity", tri, "Max", max_tri, "Ratio", tri / max_tri)
-        time.sleep(0.1)
+        # print("Triangularity", tri, "Max", max_tri, "Ratio", tri / max_tri)
+        print("pstdev X", statistics.pstdev(robot.p[0] for robot in robots))
+        print("pstdev Y", statistics.pstdev(robot.p[1] for robot in robots))
+        print("f(X) * f(Y)", spread)
+        print(f"Showed {frame_displayed} frames")
 
-    if i % 2000 == 0:
-        print(f"{i} seconds")
+    if i % 1000 == 0:
+        print(f"{i} steps")
 
 # >>> unicodedata.name('\u3000')
 # 'IDEOGRAPHIC SPACE'

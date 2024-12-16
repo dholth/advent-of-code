@@ -174,9 +174,11 @@ robots = list(parse(aocd.data))
 max_tri = 1
 min_spread = 1e9
 frame_displayed = 0
-for i in range(1, 6476):
+for i in range(1, 10000):
     simulate(robots, 1, full_size)
-    # winning implementation showed frames matching tri * .9, but
+    # Winning implementation showed frames matching maximum
+    # triangularity(robots) * .94, showed 68 frames to find the special one.
+    # "minimum pstdev" strategy shows 8 frames.
 
     # tri = triangularity(by_quadrant(robots, full_size))
     spread = spreadness(robots)

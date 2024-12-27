@@ -15,6 +15,7 @@ import functools
 import itertools
 import aocd
 
+
 numbers = """\
 789
 456
@@ -27,6 +28,7 @@ arrows = """\
 <v>
 """.splitlines()
 
+# may be A029A "starts at A"
 example = """\
 029A
 980A
@@ -37,6 +39,7 @@ example = """\
 
 PRETTY = {}
 PRETTY.update((chr(i), chr(0xFEE0 + i)) for i in range(ord("0"), ord("{")))
+PRETTY.update({"v": "👇", ">": "👉", "^": "👆", "<": "👈"})
 FILLER = "\N{FULLWIDTH FULL STOP}"
 
 # 0,0 is top left; coordinates increase going right, and going down.
@@ -72,6 +75,14 @@ class Node:
     def reset(self):
         self.visited = False
         self.distance = sys.maxsize
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.letter})"
+
+
+class NodeList(list):
+    def __str__(self):
+        return ",".join(el.letter for el in self)
 
 
 @dataclass
@@ -124,7 +135,7 @@ class Grid:
 
     def display(
         self,
-        pending,
+        pending=(),
         pathset0: Iterable[tuple[int, int]] = (),
         pathset: Iterable[Node] = (),
     ):
@@ -172,7 +183,7 @@ class Grid:
                     next.distance = min(node.distance + 1, next.distance)
                     heapq.heappush(unvisited, (next.distance, next))
 
-    def _distinct_paths(self, start: Node, connected, goal: str, path: list):
+    def distinct_paths(self, start: Node, connected, goal: str, path: list):
         """
         Distinct paths to goal from start using 'connected' function to find neighbors.
         """
@@ -182,27 +193,31 @@ class Grid:
         for next, _ in connected(start):
             if next in path:
                 continue
-            yield from self._distinct_paths(next, connected, goal, path + [next])
+            yield from self.distinct_paths(next, connected, goal, path + [next])
 
     def paths_between(self, start: str, goal: str):
         begin = next(n for n in self.nodes if n.letter == start)
-        yield from self._distinct_paths(begin, self.neighbors, goal, [begin])
+        yield from self.distinct_paths(begin, self.neighbors, goal, [begin])
 
     def shortest_paths_between(self, start: str, goal: str):
         all_paths_between = list(self.paths_between(start, goal))
         shortest = min(len(p) for p in all_paths_between)
-        return [p for p in all_paths_between if len(p) == shortest]
+        return [NodeList(p) for p in all_paths_between if len(p) == shortest]
 
     @functools.cache
     def direction_between(self, start: str, goal: str):
         """
         Return arrow direction between two adjacent characters on the pad.
         """
+        if isinstance(start, Node):
+            start = start.letter
+        if isinstance(goal, Node):
+            goal = goal.letter
         begin = next(n for n in self.nodes if n.letter == start)
         for n, direction in self.neighbors(begin):
             if n.letter == goal:
                 return direction
-        raise ValueError("Not adjacent")
+        raise ValueError(f"{start},{goal} not adjacent")
 
     def reset(self):
         for node in self.nodes:
@@ -222,9 +237,58 @@ for a, b in zip(example[0], example[0][1:]):
         print(",".join(n.letter for n in path))
     print()
 
-example_path = "987412563A"
-print(f"\nBetween {example_path}")
-for a, b in zip(example_path, example_path[1:]):
-    print(a, b)
-    d = keypad.direction_between(a, b)
-    print(d, DIRECTIONS[d])
+
+example_sequences = """\
+029A: <vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A
+980A: <v<A>>^AAAvA^A<vA<AA>>^AvAA<^A>A<v<A>A>^AAAvA<^A>A<vA>^A<A>A
+179A: <v<A>>^A<vA<A>>^AAvAA<^A>A<v<A>>^AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
+456A: <v<A>>^AA<vA<A>>^AAvAA<^A>A<vA>^A<A>A<vA>^A<A>A<v<A>A>^AAvA<^A>A
+379A: <v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
+"""
+
+"""
+The complexity of a single code (like 029A) is equal to the result of multiplying these two values:
+
+    The length of the shortest sequence of button presses you need to type on your directional keypad in order to cause the code to be typed on the numeric keypad; for 029A, this would be 68.
+    The numeric part of the code (ignoring leading zeroes); for 029A, this would be 29.
+"""
+
+arrowpad = Grid(arrows)
+arrowpad.display()
+
+
+def explode(code, keypad):
+    """
+    Arrow instructions for keypad entry of code
+    """
+    exploded = []
+    for a, b in itertools.pairwise(code):
+        path = keypad.shortest_paths_between(a, b)[0]
+        for c, d in zip(path, path[1:]):
+            d = keypad.direction_between(c, d)
+            exploded.append(DIRECTIONS[d])
+        exploded.append("A")
+    return "".join(exploded)
+
+
+# to start at A
+code0 = "A" + example[0]
+
+print("Type", code0)
+explode0 = explode(code0, keypad)
+# the shortest path on explode0 may not be the shortest path on explode1
+# unfortunately (or is it only between 1 and 2)
+explode1 = explode("A" + explode0, arrowpad)
+explode2 = explode("A" + explode1, arrowpad)
+print(len(explode0), explode0)
+print(len(explode1), explode1)
+print(len(explode2), explode2)
+keypad.display()
+
+# For example, to type 029A,
+#
+#     < to move the arm from A (its initial position) to 0.
+#     A to push the 0 button.
+#     ^A to move the arm to the 2 button and push it.
+#     >^^A to move the arm to the 9 button and push it.
+#     vvvA to move the arm to the A button and push it.

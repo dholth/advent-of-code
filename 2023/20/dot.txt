@@ -1,0 +1,61 @@
+digraph {
+nt -> { rq fg ft nd gt xz }
+gt -> { jc }
+fg -> { nt gt }
+rx -> {  }
+zp -> { rx }
+xz -> { dr }
+fh -> { nt xz }
+zj -> { cf }
+zq -> { fs gr ff hf ln zj pj }
+pj -> { zj zq }
+nk -> { rq nt }
+jc -> { nt nk }
+vv -> { dm bl sb nb qd bh }
+pz -> { vv }
+mr -> { vv pz }
+fp -> { rd zq }
+cl -> { fp zq }
+bl -> { bb }
+xb -> { bl vv }
+nc -> { zq }
+vn -> { br jz ht ps zc pp ds }
+mg -> { vn }
+cf -> { gr zq }
+sb -> { zp }
+pp -> { mq }
+ht -> { pp }
+ft -> { fh }
+rq -> { ft }
+nd -> { zp }
+xm -> { vn ht }
+ps -> { xm }
+ff -> { cl }
+fs -> { ff }
+dv -> { vv hr }
+nb -> { dv }
+qd -> { xb }
+kg -> { mr vv }
+hr -> { dm vv }
+rm -> { zq fs }
+dm -> { kg }
+mq -> { vn zc }
+jz -> { qs }
+br -> { vn jz }
+ln -> { rm }
+gr -> { ln }
+bh -> { qd vv }
+zv -> { dc vn }
+zc -> { zv }
+dc -> { mg vn }
+qs -> { vn ps }
+rd -> { nc zq }
+ds -> { zp }
+bb -> { nb vv }
+qn -> { nt }
+lm -> { nt qn }
+dr -> { xd nt }
+xd -> { nt lm }
+hf -> { zp }
+broadcaster -> { pj fg bh br }
+}

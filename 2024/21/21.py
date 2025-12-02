@@ -5,16 +5,13 @@ They all start on the "A" key. Show the sequence of motions required to input
 codes.
 """
 
-import heapq
+import functools
+import itertools
 import sys
-import time
 from dataclasses import dataclass
 from typing import Iterable
 
-import functools
-import itertools
 import aocd
-
 
 numbers = """\
 789
@@ -155,39 +152,10 @@ class Grid:
                 print(PRETTY.get(char, FILLER), end="")
             print()
 
-    def shortest(self, start, goal, connected, show=False):
-        # nodes.visited and nodes.distance should be reset before calling
-        display_distance = 0
-        unvisited = [(start.distance, start)]
-        while unvisited:
-            original_priority, node = heapq.heappop(unvisited)
-            if original_priority != node.distance:
-                continue
-            if node.visited:
-                continue
-            if display_distance < node.distance:
-                display_distance = node.distance
-                if show:
-                    print("\033[2J\033[H")  # clear screen and move to home
-                    self.display(n for _, n in unvisited)
-                    sys.stdout.flush()
-
-                    time.sleep(0.01)
-            node.visited = True
-
-            if node == goal:
-                break
-
-            for next in connected(node):
-                if not next.visited:
-                    next.distance = min(node.distance + 1, next.distance)
-                    heapq.heappush(unvisited, (next.distance, next))
-
     def distinct_paths(self, start: Node, connected, goal: str, path: list):
         """
         Distinct paths to goal from start using 'connected' function to find neighbors.
         """
-        # XXX will also need directions between them, or, come up with a lookup.
         if start.letter == goal:
             yield path
         for next, _ in connected(start):
@@ -196,10 +164,15 @@ class Grid:
             yield from self.distinct_paths(next, connected, goal, path + [next])
 
     def paths_between(self, start: str, goal: str):
+        """
+        Distinct paths, easy version using letters not Node()
+        """
         begin = next(n for n in self.nodes if n.letter == start)
         yield from self.distinct_paths(begin, self.neighbors, goal, [begin])
 
     def shortest_paths_between(self, start: str, goal: str):
+        # TODO rank by minimum exploded * 2 length
+        # OR favor consecutive same-button presses
         all_paths_between = list(self.paths_between(start, goal))
         shortest = min(len(p) for p in all_paths_between)
         return [NodeList(p) for p in all_paths_between if len(p) == shortest]
@@ -254,36 +227,79 @@ The complexity of a single code (like 029A) is equal to the result of multiplyin
 """
 
 arrowpad = Grid(arrows)
-arrowpad.display()
 
 
-def explode(code, keypad):
+# Need to enumerate every explode * 2 path between each pair of symbols on
+# numeric keypad
+def explode(code, keypad: Grid):
     """
     Arrow instructions for keypad entry of code
     """
     exploded = []
     for a, b in itertools.pairwise(code):
-        path = keypad.shortest_paths_between(a, b)[0]
-        for c, d in zip(path, path[1:]):
-            d = keypad.direction_between(c, d)
-            exploded.append(DIRECTIONS[d])
+        shortest2 = []
+        for shortest in keypad.shortest_paths_between(a, b):
+            # may need to go deeper
+            shortest2.append([])
+            for c, d in zip(shortest, shortest[1:]):
+                d = keypad.direction_between(c, d)
+                shortest2[-1].append(DIRECTIONS[d])
+            min_length = min(len(s2) for s2 in shortest2)
+        exploded.extend(next(s2 for s2 in shortest2 if len(s2) == min_length))
         exploded.append("A")
-    return "".join(exploded)
+    return "".join(exploded).replace("<v<A", "v<<A")
 
 
-# to start at A
-code0 = "A" + example[0]
+def explodeN(start, next, keypads):
+    paths = keypad.paths_between(start, next[0])
+    for path in paths:
+        for c, d in zip(path, path[1:]):
+            pass
 
-print("Type", code0)
-explode0 = explode(code0, keypad)
-# the shortest path on explode0 may not be the shortest path on explode1
-# unfortunately (or is it only between 1 and 2)
-explode1 = explode("A" + explode0, arrowpad)
-explode2 = explode("A" + explode1, arrowpad)
-print(len(explode0), explode0)
-print(len(explode1), explode1)
-print(len(explode2), explode2)
+
+def distinct_paths(self, start: Node, connected, goal: str, path: list):
+    """
+    Distinct paths to goal from start using 'connected' function to find neighbors.
+    """
+    if start.letter == goal:
+        yield path
+    for next, _ in connected(start):
+        if next in path:
+            continue
+        yield from self.distinct_paths(next, connected, goal, path + [next])
+
+
+def part1(codes: list[str]):
+    total = 0
+    for i in range(len(codes)):
+        # to start at A
+        code0 = "A" + codes[i]
+
+        print("Type", code0)
+        explode0 = explode(code0, keypad)
+        # A to 1 avoiding empty space
+        explode0 = explode0.replace("<^<A", "^<<A")
+        explode0 = explode0.replace("<^<^A", "^^<<A")
+        # the shortest path on explode0 may not be the shortest path on explode1
+        # unfortunately (or is it only between 1 and 2)
+        explode1 = explode("A" + explode0, arrowpad)
+        explode2 = explode("A" + explode1, arrowpad)
+        print(len(explode0), explode0)
+        print(len(explode1), explode1)
+        print(len(explode2), explode2)
+
+        code = int(codes[i][:-1])
+        length = len(explode2)
+        print(f"Score {code} * {length} = {code*length}")
+        total += code * length
+    return total
+
+
 keypad.display()
+arrowpad.display()
+
+print("Example")
+print(part1(aocd.data.splitlines()))
 
 # For example, to type 029A,
 #
@@ -292,3 +308,15 @@ keypad.display()
 #     ^A to move the arm to the 2 button and push it.
 #     >^^A to move the arm to the 9 button and push it.
 #     vvvA to move the arm to the A button and push it.
+
+
+# For each pair of symbols on the main keyboard, find the shortest path between them.
+
+# 1. Check all paths between the symbols
+# 2. Explode 1 all paths
+# 3. Explode 2 all paths
+
+# Tricky since Explode 1 and Explode 2 generate additional segments... Maybe the
+# number of segments is predictable, and we can string together [segment 1
+# paths] [segment 2 paths] [segment 3 paths] to iterate through all possible
+# combined paths...

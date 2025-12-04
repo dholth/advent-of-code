@@ -68,12 +68,13 @@ def joltages2(lines, quiet=True):
     return values
 
 
-ex2 = joltages2(sample, quiet=False)
+ex2 = joltages2(sample, quiet=True)
 
 for expected, computed in zip(
     [987654321111, 811111111119, 434234234278, 888911112111], ex2
 ):
     assert expected == computed, list(zip(str(expected), str(computed)))
+
 print("Example OK")
 
 print("Part B", sum(joltages2(data)))

@@ -110,10 +110,10 @@ def merge_ranges(fresh: list[range]):
     depth = 0
     start = 0
     for n, inc in starts_stops:
-        depth_next = depth + inc
-        if depth == 0 and depth_next == 1:
+        depth += inc
+        if depth == 1 and inc == 1:
             start = n
-        if depth == 1 and depth_next == 0:
+        if depth == 0 and inc == -1:
             stop = n
             print(f"Merged {start}-{stop}")
             yield range(start, stop)
@@ -121,7 +121,6 @@ def merge_ranges(fresh: list[range]):
             print("Underwater", depth)
         else:
             print(depth)
-        depth = depth_next
 
 
 db2 = parse(sample)

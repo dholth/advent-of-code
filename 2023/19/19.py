@@ -185,7 +185,7 @@ def step_to_range(step):
     return r
 
 
-def merge_ranges(r1: range, r2: range):
+def intersect_ranges(r1: range, r2: range):
     return range(max(r1.start, r2.start), min(r1.stop, r2.stop))
 
 
@@ -195,7 +195,7 @@ def steps_to_ranges(steps):
         r = step_to_range(step)
         if r is not None:
             var = step["var"]
-            xmas[var] = merge_ranges(xmas[var], r)
+            xmas[var] = intersect_ranges(xmas[var], r)
     return xmas
 
 

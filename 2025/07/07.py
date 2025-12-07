@@ -3,7 +3,8 @@
 Day 7: Laboratories
 """
 
-# The jcvd algorithm: does the splits
+from itertools import starmap
+from operator import add
 
 import aocd
 
@@ -27,9 +28,9 @@ example = """.......S.......
 # using dash for visited splitter
 PRETTY = {
     ".": "\N{FULLWIDTH FULL STOP}",
-    "S": "\N{Glowing Star}",
+    "S": "\N{GLOWING STAR}",
     "^": "🌲",
-    "-": "\N{Christmas Tree}",
+    "-": "\N{CHRISTMAS TREE}",
     "|": "｜",
 }
 
@@ -66,6 +67,7 @@ down = (0, 1)
 left = (-1, 0)
 right = (1, 0)
 
+
 def jcvd(grid: dict[tuple[int, int], str], start: tuple[int, int]):
     """
     Does the splits.
@@ -76,33 +78,81 @@ def jcvd(grid: dict[tuple[int, int], str], start: tuple[int, int]):
     Mutate grid, adding | for beams and changing visited splitters to -.
     """
     # skip off-the-grid or already-contains-beam
-    if not start in grid or grid[start] == "|":
+    if start not in grid or grid[start] == "|":
         return 0
 
     grid[start] = "|"
 
-    # display(grid)
-
-    next = start[0]+down[0], start[1]+down[1]
-    if next in grid and grid[next] == '^':
+    next = start[0] + down[0], start[1] + down[1]
+    if next in grid and grid[next] == "^":
         grid[next] = "-"
-        return 2 + sum(jcvd(grid, (start[0]+step[0], start[1]+step[1])) for step in (left, right))
+        return 1 + sum(
+            jcvd(grid, (start[0] + step[0], start[1] + step[1]))
+            for step in (left, right)
+        )
 
     else:
         return jcvd(grid, next)
 
+
 grid = parse(example)
-def find_start(grid):
+
+
+def find_start(grid: dict[tuple[int, int], str]):
     for k, v in grid.items():
         if v == "S":
             return k
+    raise ValueError("No S in grid")
+
 
 print(jcvd(grid, find_start(grid)))
 
-print(sum(v=='-' for v in grid.values()))
+print(sum(v == "-" for v in grid.values()))
 
 grid = parse(aocd.data)
-jcvd(grid, find_start(grid))
-aocd.submit(sum(v=='-' for v in grid.values()))
+wrong = jcvd(grid, find_start(grid))
 
 display(grid)
+
+print("Part 1:", sum(v == "-" for v in grid.values()), wrong)
+
+
+def jcvd_2(
+    grid: dict[tuple[int, int], str],
+    start: tuple[int, int],
+    memo: dict[tuple[int, int], int],
+):
+    """
+    Now count all possible paths to the exit.
+    """
+    if start in memo:
+        return memo[start]
+
+    if start not in grid:
+        return 1
+
+    here = grid[start]
+
+    if here == "^":
+        sides = (left, right)
+    else:
+        sides = (down,)
+
+    total = sum(
+        jcvd_2(grid, tuple(starmap(add, zip(start, side))), memo) for side in sides
+    )
+    memo[start] = total
+    return total
+
+
+# will be fast even without memoization
+memo = {}
+example_grid = parse(example)
+ans_2 = jcvd_2(example_grid, find_start(example_grid), memo)
+print("Example Part 2", ans_2)
+
+# will take more time if we don't use memoization
+memo = {}
+grid = parse(aocd.data)
+ans_2_real = jcvd_2(grid, find_start(grid), memo)
+print(f"Part 2 {ans_2_real}; {ans_2_real.bit_length()} bits")

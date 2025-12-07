@@ -156,3 +156,7 @@ memo = {}
 grid = parse(aocd.data)
 ans_2_real = jcvd_2(grid, find_start(grid), memo)
 print(f"Part 2 {ans_2_real}; {ans_2_real.bit_length()} bits")
+
+part_2_for_part_1 = sum(grid[pos] == "^" for pos in memo)
+print(f"Part 1 answer from part 2 data {part_2_for_part_1}")
+print(f"{len(memo)} entries in memoization structure")

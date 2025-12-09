@@ -160,3 +160,19 @@ print(f"Part 2 {ans_2_real}; {ans_2_real.bit_length()} bits")
 part_2_for_part_1 = sum(grid[pos] == "^" for pos in memo)
 print(f"Part 1 answer from part 2 data {part_2_for_part_1}")
 print(f"{len(memo)} entries in memoization structure")
+
+def line_by_line(data: str):
+    lines = data.splitlines()
+    values = [int(c=="S") for c in lines[0]]
+    for line in lines[1:]:
+        for i in range(len(values)):
+            if line[i] == "^":
+                values[i-1] += values[i]
+                values[i+1] += values[i]
+                values[i] = 0
+
+    return values
+
+print("Line-by-line attempt", line_by_line(example), sum(line_by_line(example)))
+
+print(sum(line_by_line(aocd.data)))

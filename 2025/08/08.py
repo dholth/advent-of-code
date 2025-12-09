@@ -3,11 +3,9 @@
 Day 8: Playground.
 """
 
-import pprint
+import math
 import re
-from dataclasses import dataclass
-from functools import reduce
-from operator import mul
+from collections import defaultdict
 
 import aocd
 
@@ -16,17 +14,13 @@ import aocd
 
 # distance = √((x2-x1)²+(y2-y1)²+(z2-z1)²
 
-@dataclass
-class vector:
-    x: int
-    y: int
-    z: int
 
 def d_squared(a: tuple[int, ...], b: tuple[int, ...]):
     """
     Return square of the distance between a, b.
     """
-    return sum((x0-x1)**2 for x0, x1 in zip(a, b))
+    return sum((x0 - x1) ** 2 for x0, x1 in zip(a, b))
+
 
 example = """162,817,812
 57,618,57
@@ -50,46 +44,84 @@ example = """162,817,812
 425,690,689
 """
 
+
 def parse(data: str):
     for line in data.splitlines():
         yield tuple(int(n) for n in re.findall(r"\d+", line))
 
+
 coords = list(parse(example))
 
-def part_1(coords, pairs=1001):
+
+def part_2(coords):
+    """
+    yield connections, v0, v1 (indexes into coords)
+    """
     # all distances betwee n, m but not all distances between m, n
     # stored as squared distance
     distances: dict[tuple[int, int], int] = {}
     for n in range(len(coords)):
-        for m in range(n+1, len(coords)):
-            distances[(n,m)] = d_squared(coords[n], coords[m])
+        for m in range(n + 1, len(coords)):
+            distances[(n, m)] = d_squared(coords[n], coords[m])
 
     # all distances unique?
     assert len(set(distances.values())) == len(distances)
 
     closest_first = sorted((v, k) for k, v in distances.items())
 
-    # circuits
-    # assign coordinate indices to a circuit
-    # if any of the indices are already in a circuit, that's the number;
-    # else, a new number. or use sets.
-    circuits: list[set[int]] = []
-    for distance, (v0, v1) in closest_first[:pairs]: # off by one or just wrong?
-        print(distance, v0, v1, coords[v0], coords[v1])
-        for circuit in circuits:
-            # doesn't account for circuits that are connected together
-            if v0 in circuit or v1 in circuit:
-                circuit.add(v0)
-                circuit.add(v1)
-                break
-        else:
-            circuits.append(set((v0, v1)))
+    # map node to outgoing nodes
+    connections = defaultdict(set)
 
-    top_3 = sorted(len(circuit) for circuit in circuits)[-3:]
-    print(top_3)
-    pprint.pprint(circuits)
-    return reduce(mul, top_3)
+    for distance, (v0, v1) in closest_first:
+        #       print(distance, v0, v1, coords[v0], coords[v1])
+        connections[v0].add(v1)
+        connections[v1].add(v0)
 
-assert part_1(coords, 10) == 40
+        yield connections, v0, v1
 
-# aocd.submit(part_1(list(parse(aocd.data)), 1001))
+
+def part_1(coords, pairs=1000):
+    for i, (connections, *_) in enumerate(part_2(coords)):
+        if i == pairs:
+            return connections
+
+
+connections = part_1(coords, 10)
+
+
+def assign_clique(connections: dict[int, set[int]], v0, clique: set[int]):
+    """
+    Recursively add elements to clique if not in clique.
+    """
+    if v0 in clique:
+        return
+    clique.add(v0)
+    for v1 in connections[v0]:
+        assign_clique(connections, v1, clique)
+    return clique
+
+
+def circuits(connections):
+    # now call it, add to "big set of visited things", and keep going.
+    visited = set()
+    for v0 in connections:
+        if v0 in visited:
+            continue
+        circuit = assign_clique(connections, v0, set())
+        yield len(circuit)
+        visited.update(circuit)
+
+
+coords2 = list(parse(aocd.data))
+connections = part_1(coords2, 1000)
+print("Part 1", math.prod(sorted(circuits(connections))[-3:]))
+
+# Now keep going until there is one circuit
+
+
+for i, (connections, v0, v1) in enumerate(part_2(coords2)):
+    cc = list(circuits(connections))
+    # print(i, len(cc))
+    if len(cc) == 1 and cc[0] == len(coords2):
+        print("Part 2", coords2[v0][0] * coords2[v1][0])
+        break
